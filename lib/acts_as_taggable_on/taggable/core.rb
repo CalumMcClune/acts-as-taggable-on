@@ -268,7 +268,7 @@ module ActsAsTaggableOn::Taggable
     end
 
     def custom_contexts
-      @custom_contexts ||= taggings.map(&:context).uniq
+      @custom_contexts ||= (taggings.map(&:context).uniq - self.class.tag_types.map(&:to_s))
     end
 
     def is_taggable?
@@ -276,7 +276,8 @@ module ActsAsTaggableOn::Taggable
     end
 
     def add_custom_context(value)
-      custom_contexts << value.to_s unless custom_contexts.include?(value.to_s) or self.class.tag_types.map(&:to_s).include?(value.to_s)
+      context = value.to_s.pluralize
+      custom_contexts << context unless custom_contexts.include?(context) or self.class.tag_types.map(&:to_s).include?(context)
     end
 
     def cached_tag_list_on(context)
@@ -316,7 +317,7 @@ module ActsAsTaggableOn::Taggable
     def all_tags_on(context)
       tagging_table_name = ActsAsTaggableOn::Tagging.table_name
 
-      opts = ["#{tagging_table_name}.context = ?", context.to_s]
+      opts = ["#{tagging_table_name}.context = ?", context.to_s.pluralize]
       base_relation_name = tag_options[context.to_s][:base_tags_relation] || :base_tags
       scope = send(base_relation_name).where(opts)
 
@@ -358,13 +359,13 @@ module ActsAsTaggableOn::Taggable
       if changed_attributes.include?(attrib)
         # The attribute already has an unsaved change.
         old = changed_attributes[attrib]
-        @changed_attributes.delete(attrib) if old.to_s == value.to_s
+        changed_attributes.delete(attrib) if old.to_s == value.to_s
       else
         old = tag_list_on(context)
         if self.class.preserve_tag_order
-          @changed_attributes[attrib] = old if old.to_s != value.to_s
+          changed_attributes[attrib] = old if old.to_s != value.to_s
         else
-          @changed_attributes[attrib] = old.to_s if old.sort != ActsAsTaggableOn.default_parser.new(value).parse.sort
+          changed_attributes[attrib] = old.to_s if old.sort != ActsAsTaggableOn.default_parser.new(value).parse.sort
         end
       end
     end
