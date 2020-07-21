@@ -26,12 +26,9 @@ before_install:
 script: bundle exec rake
 
 matrix:
-<<<<<<< HEAD
   exclude:
     - rvm: 2.0.0
       gemfile: gemfiles/activerecord_5.0.gemfile
     - rvm: 2.1
       gemfile: gemfiles/activerecord_5.0.gemfile
-=======
->>>>>>> f5222d8... Drop support for old version of ActiveRecord and Ruby and prepare rel… (#828)
   fast_finish: true
